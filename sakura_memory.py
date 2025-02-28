@@ -1,12 +1,28 @@
-from flask import Flask
+import sqlite3
 
-app = Flask(__name__)
+# データベース接続（なければ作成）
+conn = sqlite3.connect("sakura_memory.db")
+cursor = conn.cursor()
 
-@app.route("/")
-def home():
-    return "Sakura Memory is running successfully!"
+# 記憶データを保存するためのテーブルを作成
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS memory (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    message TEXT NOT NULL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+)
+""")
+conn.commit()
+conn.close()
 
-if __name__ == "__main__":
-    import os
-    port = int(os.environ.get("PORT", 5000))  # Renderが指定するPORTを取得
-    app.run(host="0.0.0.0", port=port)  # 全てのIPアドレスからアクセス可能にする
+print("Sakura Memory Database is ready!")
+def save_memory(message):
+    conn = sqlite3.connect("sakura_memory.db")
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO memory (message) VALUES (?)", (message,))
+    conn.commit()
+    conn.close()
+    print(f"記憶を保存しました: {message}")
+
+# テスト：メッセージを保存
+save_memory("さくたん大好き💖")
